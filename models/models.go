@@ -56,7 +56,7 @@ type Order struct{
 }
 
 type Payment struct{
-	Digital bool
-	COD bool
+	Digital 							bool
+	COD 								bool
 }
 
