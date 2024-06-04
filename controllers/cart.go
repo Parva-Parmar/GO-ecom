@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Parva-Parmar/GO-ecom/database"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -51,10 +52,14 @@ func (app *Application) AddToCart() gin.Handler {
 
 		defer cancel()
 
+		err = database.AddProductToCart(ctx, app.prodCollection, app.userCollection, productID, userQueryID)
+		if err != nil {
+			c.IndentedJSON(200, "Successfully added to the cart")
+		}
 	}
 }
 
-func RemoteItem() gin.HandlerFunc {
+func RemoveItem() gin.HandlerFunc {
 
 }
 
