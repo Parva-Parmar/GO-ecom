@@ -137,7 +137,9 @@ func GetItemFromCart() gin.HandlerFunc {
 
 		for _,json := range listing{
 			c.IndentedJSON(200,json["total"])
+			c.IndentedJSON(200,filledcart.UserCart)
 		}
+		ctx.Done()
 	 }
 }
 
