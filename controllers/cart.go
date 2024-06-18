@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Parva-Parmar/GO-ecom/database"
+	"github.com/Parva-Parmar/GO-ecom/models"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -98,7 +99,25 @@ func  (app *Application) RemoveItem() gin.HandlerFunc {
 }
 
 func GetItemFromCart() gin.HandlerFunc {
-	
+	 return func(c *gin.Context){
+		user_id := c.Query("id")
+
+		if user_id == ""{
+			c.Header("Context-Type","application/json")
+			c.JSON(http.StatusNotFound,gin.H{"error":"invalid id"})
+			c.Abort()
+			return
+		}
+
+		usert_id,_ := primitive.ObjectIDFromHex(user_id)
+
+		var ctx,cancel = context.WithTimeout(context.Background(),100*time.Second)
+		defer cancel()
+
+		var filledcart models.User
+		UserCollection.FindOne(ctx,bson.D{primitive.E{Key:"_id",Value:usert_id}}).Decode(&filledcart)
+
+	 }
 }
 
 func (app *Application) BuyFromCart() gin.HandlerFunc {
