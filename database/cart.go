@@ -3,8 +3,10 @@ package database
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/Parva-Parmar/GO-ecom/models"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -64,8 +66,53 @@ func RemoveCartItem(ctx context.Context,prodCollection,userCollection *mongo.Col
 	return nil
 }
 
-func BuyItemFromCart(){
+func BuyItemFromCart(ctx context.Context,userCollection *mongo.Collection,userID string) error{
+	id,err := primitive.ObjectIDFromHex(userID)
+	if err != nil{
+		log.Println(err)
+		return ErrUserIdIdNotValid
+	}
+	var getcartitems models.User
+	var ordercart models.Order
 
+	ordercart.Order_ID = primitive.NewObjectID()
+	ordercart.Ordered_At = time.Now()
+	ordercart.Order_Cart = make([]models.ProductUser,0)
+	ordercart.Payment_Method.COD = true
+
+	unwind := bson.D{{Key:"$unwind",Value:bson.D{primitive.E{Key:"path",Value:"$usercart"}}}}
+	grouping := bson.D{{Key:"$group",Value:bson.D{primitive.E{Key:"_id",Value:"$_id",Value: bson.D{primitive.E{Key:"$sum",Value:"$usercart.price"}}}}}}
+	currentresults,err := userCollection.Aggregate(ctx,mongo.Pipeline{unwind,grouping})
+	ctx.Done()
+	if err != nil {
+		panic(err)
+	}
+
+	var getusercart []bson.M
+	if currentresults.All(ctx,&getusercart); err != nil{
+		panic(err)
+	}
+	var total_price int32
+
+	for _,user_item := range getusercart {
+		price := user_item["total"]
+		total_price = price.(int32)
+	}
+
+	ordercart.Price = int(total_price)
+
+	filter := bson.D{primitive.E{Key:"_id",Value: id}}
+	update := bson.D{{Key:"$push",Value:bson.D{primitive.E{Key:"orders",Value:order}}}}
+
+	_,err = userCollection.UpdateMany(ctx,filter,update)
+	if err != nil {
+		log.Println(err)
+	}
+
+	userCollection.FindOne(ctx,bson.D{primitive.E{Key:"_id",Value:id}}).Decode(&getcartitems)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func InstantBuyer(){
