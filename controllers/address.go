@@ -23,7 +23,7 @@ func AddAddress() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		address, err := ObjectIDFromHex(user_id)
+		address, err := primitive.ObjectIDFromHex(user_id)
 		if err != nil {
 			c.IndentedJSON(500, "Internal Server Error")
 		}
@@ -59,7 +59,7 @@ func AddAddress() gin.HandlerFunc {
 		}
 		if size < 2{
 			filter := bson.D{primitive.E{Key:"_id",Value: address}}
-			update := bson.D{{Key:"$push",Value: bson.D{Keey:"address",Value: addresses}}}
+			update := bson.D{{Key:"$push",Value: bson.D{primitive.E{Key:"address",Value: addresses}}}}
 			_,err := UserCollection.UpdateOne(ctx,filter,update)
 			if err != nil{
 				fmt.Println(err)

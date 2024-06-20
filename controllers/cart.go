@@ -6,10 +6,10 @@ import (
 	"log"
 	"net/http"
 	"time"
-
-	"github.com/Parva-Parmar/GO-ecom/database"
 	"github.com/Parva-Parmar/GO-ecom/models"
+	"github.com/Parva-Parmar/GO-ecom/database"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -26,7 +26,7 @@ func NewApplication(prodCollection, userCollection *mongo.Collection) *Applicati
 	}
 }
 
-func (app *Application) AddToCart() gin.Handler {
+func (app *Application) AddToCart() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		productQueryID := c.Query("id")
 		if productQueryID == "" {
@@ -49,7 +49,7 @@ func (app *Application) AddToCart() gin.Handler {
 			return
 		}
 
-		var ctx, cancel = context.WithTimeOut(context.Background(), 5*time.Second)
+		var ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
 
 		defer cancel()
 
@@ -84,7 +84,7 @@ func  (app *Application) RemoveItem() gin.HandlerFunc {
 			return
 		}
 
-		var ctx, cancel = context.WithTimeOut(context.Background(), 5*time.Second)
+		var ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
 
 		defer cancel()
 
@@ -132,7 +132,7 @@ func GetItemFromCart() gin.HandlerFunc {
 		var listing []bson.M
 		if err = pointcursor.All(ctx,&listing); err != nil{
 			log.Println(err)
-			c.AbortWithStatus(http.StatusInternalServer)
+			c.AbortWithStatus(http.StatusInternalServerError)
 		}
 
 		for _,json := range listing{
@@ -145,9 +145,9 @@ func GetItemFromCart() gin.HandlerFunc {
 
 func (app *Application) BuyFromCart() gin.HandlerFunc {
 	return func(c *gin.Context){
-		userQueryID := c.Query("id")
+		UserQueryID := c.Query("id")
 
-		if userQueryID == ""{
+		if UserQueryID == ""{
 			log.Panic("user id is empty")
 			_ = c.AbortWithError(http.StatusBadRequest,errors.New("UserID is empty"))
 		}
@@ -156,11 +156,11 @@ func (app *Application) BuyFromCart() gin.HandlerFunc {
 
 		defer cancel()
 
-		err := database.BuyItemFromCart(ctx,app.userCollection,userQueryID)
+		err := database.BuyItemFromCart(ctx,app.userCollection,UserQueryID)
 		if err != nil{
 			c.IndentedJSON(http.StatusInternalServerError,err)
 		}
-		c.IndentedJSON("successfully placed the order")
+		c.IndentedJSON(200,"successfully placed the order")
 	}
 }
 
@@ -187,7 +187,7 @@ func (app *Application) InstantBuy() gin.HandlerFunc {
 			return
 		}
 
-		var ctx, cancel = context.WithTimeOut(context.Background(), 5*time.Second)
+		var ctx, cancel = context.WithTimeout(context.Background(), 5*time.Second)
 
 		defer cancel()
 

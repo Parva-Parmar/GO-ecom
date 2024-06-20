@@ -2,9 +2,9 @@ package database
 
 import (
 	"context"
+	"errors"
 	"log"
 	"time"
-
 	"github.com/Parva-Parmar/GO-ecom/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"

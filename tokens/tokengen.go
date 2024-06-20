@@ -2,19 +2,16 @@ package token
 
 import (
 	"context"
-	"go/token"
 	"log"
 	"os"
 	"time"
 
 	"github.com/Parva-Parmar/GO-ecom/database"
 	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/go-playground/locales/fur"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/x/mongo/driver/mongocrypt/options"
 )
 
 
