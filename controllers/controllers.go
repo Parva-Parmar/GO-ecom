@@ -207,7 +207,7 @@ func SearchProductByQuery() gin.HandlerFunc{
 		if queryParam == ""{
 			log.Println("query is empty")
 			c.Header("Content-Type","application/json")
-			c.JSON(HTTP.StatusNotFound,gin.H{"Error":"Invalid search index"})
+			c.JSON(http.StatusNotFound,gin.H{"Error":"Invalid search index"})
 			c.Abort()
 			return
 		}

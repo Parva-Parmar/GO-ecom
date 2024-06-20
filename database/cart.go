@@ -24,7 +24,7 @@ var (
 )
 
 func AddProductToCart(ctx context.Context,prodCollection,userCollection *mongo.Collection,productID primitive.ObjectID,userID string) error{
-	searchfromdb,err := prodCollection.Find(ctx,bson.m{"_id":productID})
+	searchfromdb,err := prodCollection.Find(ctx,bson.M{"_id":productID})
 	if err != nil {
 		log.Println(err)
 		return ErrCantFindProduct
@@ -44,7 +44,7 @@ func AddProductToCart(ctx context.Context,prodCollection,userCollection *mongo.C
 	filter := bson.D{primitive.E{Key:"_id",Value:id}}
 	update := bson.D{{Key:"$push",Value: bson.D{primitive.E{Key:"usercart",Value: bson.D{{Key:"$each",Value:productCart}}}}}}
 
-	_,err = userCollection.UpdateOne(ctx,fliter,update)
+	_,err = userCollection.UpdateOne(ctx,filter,update)
 	if err != nil {
 		return ErrCantUpdateUser
 	}
@@ -59,7 +59,7 @@ func RemoveCartItem(ctx context.Context,prodCollection,userCollection *mongo.Col
 	}
 	filter := bson.D{primitive.E{Key:"_id",Value:id}}
 	update := bson.M{"$pull":bson.M{"usercart":bson.M{"_id":productID}}}
-	_,err = UpdateMany(ctx,filter,update)
+	_,err = userCollection.UpdateMany(ctx,filter,update)
 	if err != nil {
 		return ErrCantReomveItemCart
 	}
@@ -81,7 +81,7 @@ func BuyItemFromCart(ctx context.Context,userCollection *mongo.Collection,userID
 	ordercart.Payment_Method.COD = true
 
 	unwind := bson.D{{Key:"$unwind",Value:bson.D{primitive.E{Key:"path",Value:"$usercart"}}}}
-	grouping := bson.D{{Key:"$group",Value:bson.D{primitive.E{Key:"_id",Value:"$_id",Value: bson.D{primitive.E{Key:"$sum",Value:"$usercart.price"}}}}}}
+	grouping := bson.D{{Key: "$group", Value: bson.D{primitive.E{Key: "_id", Value: "$_id"}, {Key: "total", Value: bson.D{primitive.E{Key: "$sum", Value: "$usercart.price"}}}}}}
 	currentresults,err := userCollection.Aggregate(ctx,mongo.Pipeline{unwind,grouping})
 	ctx.Done()
 	if err != nil {
